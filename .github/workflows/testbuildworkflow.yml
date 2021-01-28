@@ -14,9 +14,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'csharp' ]
         projectPath:
-          - 
+          - # For if the unity project isn't at the root of the repo
         unityVersion:
           - 2019.4.17f1
         targetPlatform:

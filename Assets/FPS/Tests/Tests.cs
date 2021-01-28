@@ -8,6 +8,8 @@ namespace Tests
 {
     public class Tests
     {
+        string insecureLink = "http://google.com";
+
         // A Test behaves as an ordinary method
         [Test]
         public void TestsSimplePasses()
@@ -22,6 +24,7 @@ namespace Tests
         {
             // Use the Assert class to test conditions.
             // Use yield to skip a frame.
+            string useLink = insecureLink;
             yield return null;
             Assert.AreEqual(1, 1);
         }
