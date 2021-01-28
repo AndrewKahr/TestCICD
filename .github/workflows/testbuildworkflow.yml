@@ -32,6 +32,9 @@ jobs:
           #- XboxOne # Build a Xbox One Standalone.
           #- tvOS # Build to Apple's tvOS platform.
           #- Switch # Build a Nintendo Switch player.
+        securityArtifactsPath:
+          - /security_artifacts
+    
     steps:
       - name: Checkout Project
         uses: actions/checkout@v2
@@ -46,6 +49,18 @@ jobs:
           restore-keys: |
             Library-${{ matrix.projectPath }}-
             Library-
+      
+      - name: Security Scan
+        uses: microsoft/DevSkim-Action@v1
+      
+      - name: Upload Security Scan Results
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          output-directory: ${{ Matrix.securityArtifactsPath }}
+          sarif_file: devskim-results.sarif
+      
+      - name: Clean Security Artifacts Directory
+        run: sudo rm -rf ${{ Matrix.securityArtifactsPath }}
       
       - name: Run Unity Tests
         uses: game-ci/unity-test-runner@v2.0-alpha-2
