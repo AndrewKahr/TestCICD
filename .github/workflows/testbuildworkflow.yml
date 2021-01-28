@@ -50,6 +50,9 @@ jobs:
             Library-${{ matrix.projectPath }}-
             Library-
       
+      - name: Make Security Artifacts Directory
+        run: sudo mkdir ${{ Matrix.securityArtifactsPath }}
+      
       - name: Security Scan
         uses: microsoft/DevSkim-Action@v1
         with:
