@@ -49,23 +49,6 @@ jobs:
             Library-${{ matrix.projectPath }}-
             Library-
       
-      - name: Make Security Artifacts Directory
-        run: sudo mkdir ${{ Matrix.securityArtifactsPath }}
-      
-      - name: Security Scan
-        uses: microsoft/DevSkim-Action@v1
-        with:
-          output-filename: devskim-results.sarif
-          output-directory: ${{ Matrix.securityArtifactsPath }}
-      
-      - name: Upload Security Scan Results
-        uses: github/codeql-action/upload-sarif@v1
-        with:
-          sarif_file: ${{ Matrix.securityArtifactsPath }}/devskim-results.sarif
-      
-      - name: Clean Security Artifacts Directory
-        run: sudo rm -rf ${{ Matrix.securityArtifactsPath }}
-      
       - name: Run Unity Tests
         uses: game-ci/unity-test-runner@v2.0-alpha-2
         id: testRunner
