@@ -38,6 +38,17 @@ jobs:
         with:
           lfs: true
       
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v1
+        with:
+          languages: ${{ matrix.language }}
+          
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v1
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v1
+        
       - name: Cache Objects
         uses: actions/cache@v1.1.0
         with:
@@ -62,12 +73,7 @@ jobs:
       
       - name: Clean Artifacts Directory
         run: sudo rm -rf ${{ steps.testRunner.outputs.artifactsPath }}
-      
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
-        with:
-          languages: ${{ matrix.language }}
-      
+        
       - name: Build Unity Project
         uses: game-ci/unity-builder@v2.0-alpha-6
         with:
@@ -76,9 +82,6 @@ jobs:
           targetPlatform: ${{ matrix.targetPlatform }}
           versioning: Semantic
           customParameters: ''
-      
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v1
       
       - name: Upload Build Output
         uses: actions/upload-artifact@v1
