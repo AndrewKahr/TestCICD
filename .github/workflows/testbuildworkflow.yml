@@ -41,6 +41,9 @@ jobs:
       - name: Print Directory
         run: sudo ls -lashi
       
+      - name: Locate Library
+        run: sudo find . -type d -name Library
+        
       - name: Cache Objects
         uses: actions/cache@v2.1.3
         with:
@@ -86,3 +89,6 @@ jobs:
       
       - name: Print Directory
         run: sudo ls -lashi
+        
+      - name: Locate Library
+        run: sudo find . -type d -name Library
