@@ -1,0 +1,87 @@
+name: Test Build Scan
+
+on:
+  pull_request: {}
+  push: {}
+
+env:
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+
+jobs:
+  buildTestAnalyzeForPlatforms:
+    name: Build for ${{ matrix.targetPlatform }} on version ${{ matrix.unityVersion }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'csharp' ]
+        projectPath:
+          - 
+        unityVersion:
+          - 2019.4.17f1
+        targetPlatform:
+          - StandaloneOSX # Build a macOS standalone (Intel 64-bit).
+          - StandaloneWindows # Build a Windows standalone.
+          - StandaloneWindows64 # Build a Windows 64-bit standalone.
+          - StandaloneLinux64 # Build a Linux 64-bit standalone.
+          #- iOS # Build an iOS player.
+          #- Android # Build an Android .apk standalone app.
+          #- WebGL # WebGL.
+          #- WSAPlayer # Build an Windows Store Apps player.
+          #- PS4 # Build a PS4 Standalone.
+          #- XboxOne # Build a Xbox One Standalone.
+          #- tvOS # Build to Apple's tvOS platform.
+          #- Switch # Build a Nintendo Switch player.
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v2
+        with:
+          lfs: true
+      
+      - name: Cache Objects
+        uses: actions/cache@v1.1.0
+        with:
+          path: ${{ matrix.projectPath }}/Library
+          key: Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}
+          restore-keys: |
+            Library-${{ matrix.projectPath }}-
+            Library-
+      
+      - name: Run Unity Tests
+        uses: game-ci/unity-test-runner@v2.0-alpha-2
+        id: testRunner
+        with:
+          projectPath: ${{ matrix.projectPath }}
+          unityVersion: ${{ matrix.unityVersion }}
+      
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v1
+        with:
+          name: Test results (all modes)
+          path: ${{ steps.testRunner.outputs.artifactsPath }}
+      
+      - name: Clean Artifacts Directory
+        run: sudo rm -rf ${{ steps.testRunner.outputs.artifactsPath }}
+      
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v1
+        with:
+        languages: ${{ matrix.language }}
+      
+      - name: Build Unity Project
+        uses: game-ci/unity-builder@v2.0-alpha-6
+        with:
+          projectPath: ${{ matrix.projectPath }}
+          unityVersion: ${{ matrix.unityVersion }}
+          targetPlatform: ${{ matrix.targetPlatform }}
+          versioning: Semantic
+          customParameters: ''
+      
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v1
+      
+      - name: Upload Build Output
+        uses: actions/upload-artifact@v1
+        with:
+          name: Build_${{ matrix.targetPlatform }}
+          path: build
