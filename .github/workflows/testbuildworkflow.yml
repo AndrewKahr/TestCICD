@@ -77,3 +77,6 @@ jobs:
         with:
           name: Build_${{ matrix.targetPlatform }}
           path: build
+      
+      - name: Print Directory
+        run: sudo ls -lashi
