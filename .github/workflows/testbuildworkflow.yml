@@ -33,7 +33,7 @@ jobs:
           #- tvOS # Build to Apple's tvOS platform.
           #- Switch # Build a Nintendo Switch player.
         securityArtifactsPath:
-          - /security_artifacts
+          - security_artifacts
     
     steps:
       - name: Checkout Project
@@ -52,6 +52,9 @@ jobs:
       
       - name: Make Security Artifacts Directory
         run: sudo mkdir ${{ Matrix.securityArtifactsPath }}
+      
+      - name: Debug Print Directory
+        run: sudo ls -lashi
       
       - name: Security Scan
         uses: microsoft/DevSkim-Action@v1
