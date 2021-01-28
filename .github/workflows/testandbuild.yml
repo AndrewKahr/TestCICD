@@ -43,6 +43,7 @@ jobs:
         with:
           name: Test results (all modes)
           path: ${{ steps.testRunner.outputs.artifactsPath }}
+      - run: rm -rf ${{ steps.testRunner.outputs.artifactsPath }}
       - uses: game-ci/unity-builder@v2.0-alpha-6
         with:
           projectPath: ${{ matrix.projectPath }}
