@@ -42,6 +42,10 @@ jobs:
           # Full git history is needed to get a proper list of changed files within `super-linter`
           fetch-depth: 0
 
+
+      - run sudo ls -lashi
+      - run pwd
+      
       ################################
       # Run Linter against code base #
       ################################
