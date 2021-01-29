@@ -41,11 +41,6 @@ jobs:
         with:
           # Full git history is needed to get a proper list of changed files within `super-linter`
           fetch-depth: 0
-
-
-      - run: sudo ls -lashi
-      
-      - run: pwd
       
       ################################
       # Run Linter against code base #
@@ -58,6 +53,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           FILTER_REGEX_INCLUDE: .*.cs
           FILTER_REGEX_EXCLUDE: .*.meta
+          OUTPUT_FOLDER: .
           
       - name: Upload Lint Output
         uses: actions/upload-artifact@v1
