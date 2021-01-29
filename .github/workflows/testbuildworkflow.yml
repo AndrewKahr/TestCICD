@@ -31,8 +31,6 @@ jobs:
           #- XboxOne # Build a Xbox One Standalone.
           #- tvOS # Build to Apple's tvOS platform.
           #- Switch # Build a Nintendo Switch player.
-        securityArtifactsPath:
-          - security_artifacts
     
     steps:
       - name: Checkout Project
