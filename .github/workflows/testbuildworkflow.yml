@@ -19,7 +19,7 @@ jobs:
         targetPlatform:
           - StandaloneWindows64 # Test a win64 standalone
       
-      steps:
+    steps:
       - name: Checkout Project
         uses: actions/checkout@v2
         with:
