@@ -43,8 +43,9 @@ jobs:
           fetch-depth: 0
 
 
-      - run sudo ls -lashi
-      - run pwd
+      - run: sudo ls -lashi
+      
+      - run: pwd
       
       ################################
       # Run Linter against code base #
