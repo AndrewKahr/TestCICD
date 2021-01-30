@@ -52,10 +52,10 @@ jobs:
         run: sudo rm -rf ${{ steps.testRunner.outputs.artifactsPath }}
         
       - name: Save Repo For Build Jobs
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
-          name: repo
-          path: .
+          name: Assets
+          path: Assets
           retention-days: 1
           
   BuildForTargetPlatforms:
@@ -84,11 +84,23 @@ jobs:
           #- Switch # Build a Nintendo Switch player.
     
     steps:
+      - name: Checkout Project
+        uses: actions/checkout@v2
+      
+      - name: Debug Delete Assets Folder
+        run: sudo rm -rf Assets
+      
+      - name: Debug dir print
+        run: sudo ls -lashi
+      
       - name: Pull Cached Repo From Project Tests Job
         uses: actions/download-artifact@v2
         with:
-          name: repo
-        
+          name: Assets
+      
+      - name: Debug dir print
+        run: sudo ls -lashi
+      
       - name: Cache Objects
         uses: actions/cache@v2.1.3
         with:
@@ -108,7 +120,7 @@ jobs:
           customParameters: ''
       
       - name: Upload Build Output
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: Build_${{ matrix.targetPlatform }}
           path: build

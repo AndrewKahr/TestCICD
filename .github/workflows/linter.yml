@@ -53,7 +53,7 @@ jobs:
           OUTPUT_FOLDER: .
           
       - name: Upload Lint Output
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: LintReport
           path: super-linter.report
