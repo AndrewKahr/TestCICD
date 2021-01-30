@@ -28,7 +28,7 @@ jobs:
       - name: Cache Objects
         uses: actions/cache@v2.1.3
         with:
-          path: ${{ matrix.projectPath }}/Library
+          path: ${{ matrix.projectPath }}Library
           key: Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}
           restore-keys: |
             Library-${{ matrix.projectPath }}-
@@ -51,12 +51,18 @@ jobs:
       - name: Clean Artifacts Directory
         run: sudo rm -rf ${{ steps.testRunner.outputs.artifactsPath }}
         
+      - name: Debug dir print
+        run: sudo ls -lashi
+        
       - name: Save Repo For Build Jobs
         uses: actions/upload-artifact@v2
         with:
           name: Assets
           path: Assets
           retention-days: 1
+      
+      - name: Debug dir print
+        run: sudo ls Library -lashi
           
   BuildForTargetPlatforms:
     name: Build for ${{ matrix.targetPlatform }} on version ${{ matrix.unityVersion }}
@@ -90,6 +96,9 @@ jobs:
       - name: Debug Delete Assets Folder
         run: sudo rm -rf Assets
       
+      - name: Debug Add Assets Folder
+        run: sudo mkdir Assets
+      
       - name: Debug dir print
         run: sudo ls -lashi
       
@@ -97,6 +106,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: Assets
+          path: Assets
       
       - name: Debug dir print
         run: sudo ls -lashi
@@ -104,7 +114,7 @@ jobs:
       - name: Cache Objects
         uses: actions/cache@v2.1.3
         with:
-          path: ${{ matrix.projectPath }}/Library
+          path: ${{ matrix.projectPath }}Library
           key: Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}
           restore-keys: |
             Library-${{ matrix.projectPath }}-
