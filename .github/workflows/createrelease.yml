@@ -125,12 +125,12 @@ jobs:
           customParameters: ''
       
       - name: Zip Build
-        run: sudo zip -r ${{ matrix.targetPlatform }}.zip build
+        run: (cd build/${{ matrix.targetPlatform }} && sudo zip -r ../../${{ matrix.targetPlatform }}.zip .)
       
       - name: Upload Build Output
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.targetPlatform }}
+          name: build
           path: ${{ matrix.targetPlatform }}.zip
 
   CreateRelease:
@@ -142,9 +142,6 @@ jobs:
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
     steps:
-      - name: Set env
-        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-      
       - name: Download All Builds
         uses: actions/download-artifact@v2
         
@@ -153,6 +150,6 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: false
-          title: 'Release ${{ env.RELEASE_VERSION }}'
+          title: 'Latest Release'
           files: |
-            *.zip
+            build/*.zip
