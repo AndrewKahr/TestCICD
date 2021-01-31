@@ -124,17 +124,23 @@ jobs:
           versioning: Semantic
           customParameters: ''
       
+      - name: Zip Build
+        run: sudo zip -r ${{ matrix.targetPlatform }}.zip /build
+      
       - name: Upload Build Output
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.targetPlatform }}
-          path: build
+          path: ${{ matrix.targetPlatform }}.zip
 
   CreateRelease:
     name: Create Release
     needs: BuildForTargetPlatforms
     runs-on: ubuntu-latest
-    
+    # REMOVE THIS WHEN AUTOMATIC RELEASES CHANGES TO USE ENVIRONMENT FILES
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+
     steps:
       - name: Set env
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
@@ -148,4 +154,4 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: false
           title: 'Release ${{ env.RELEASE_VERSION }}'
-          files: *
+          files: *.zip

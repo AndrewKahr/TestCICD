@@ -124,11 +124,14 @@ jobs:
           versioning: Semantic
           customParameters: ''
       
+      - name: Zip Build
+        run: sudo zip -r ${{ matrix.targetPlatform }}.zip /build
+      
       - name: Upload Build Output
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.targetPlatform }}
-          path: build
+          path: ${{ matrix.targetPlatform }}.zip
 
   CreatePreRelease:
     name: Create Pre-Release
@@ -140,20 +143,14 @@ jobs:
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     
     steps:
-      - name: Get current date
-        id: date
-        run: echo "name=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
-      
       - name: Download All Builds
         uses: actions/download-artifact@v2
       
-      -run: sudo ls -lashi
-      
-      - name: Create Release     
+      - name: Create Pre-Release     
         uses: marvinpinto/action-automatic-releases@v1.1.0
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: true
           automatic_release_tag: 'latest-prerelease'
-          title: 'Development Build ${{ steps.date.outputs.date }}' 
-          files: *
+          title: 'Latest Development Build'
+          files: *.zip
