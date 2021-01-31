@@ -146,7 +146,7 @@ jobs:
       - name: Download All Builds
         uses: actions/download-artifact@v2
       
-      - name: Create Pre-Release     
+      - name: Create Pre-Release
         uses: marvinpinto/action-automatic-releases@v1.1.0
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
