@@ -1,6 +1,11 @@
-name: Test and Build
+# This workflow runs unit tests on the project, builds it, uploads artifacts, 
+# then creates a release with the tag name and build artifacts
+name: Create Release
 
-on: [push, pull_request]
+on: 
+  push:
+    tags:
+        - 'v*'
 
 env:
   UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -22,11 +27,22 @@ jobs:
     steps:
       - name: Checkout Project
         uses: actions/checkout@v2
+        
+      - name: Create LFS File List
+        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
+
+      - name: Restore LFS Cache
+        uses: actions/cache@v2
+        id: lfs-cache
         with:
-          lfs: true
+          path: .git/lfs
+          key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}-v1
+
+      - name: Git LFS Pull
+        run: git lfs pull
       
-      - name: Cache Objects
-        uses: actions/cache@v2.1.3
+      - name: Restore Library Cache
+        uses: actions/cache@v2
         with:
           path: ${{ matrix.projectPath }}Library
           key: Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}
@@ -41,29 +57,7 @@ jobs:
           projectPath: ${{ matrix.projectPath }}
           unityVersion: ${{ matrix.unityVersion }}
           testMode: playmode
-      
-      - name: Upload Test Results
-        uses: actions/upload-artifact@v1
-        with:
-          name: Test results (all modes)
-          path: ${{ steps.testRunner.outputs.artifactsPath }}
-          
-      - name: Clean Artifacts Directory
-        run: sudo rm -rf ${{ steps.testRunner.outputs.artifactsPath }}
-        
-      - name: Debug dir print
-        run: sudo ls -lashi
-        
-      - name: Save Repo For Build Jobs
-        uses: actions/upload-artifact@v2
-        with:
-          name: Assets
-          path: Assets
-          retention-days: 1
-      
-      - name: Debug dir print
-        run: sudo ls Library -lashi
-          
+
   BuildForTargetPlatforms:
     name: Build for ${{ matrix.targetPlatform }} on version ${{ matrix.unityVersion }}
     needs: RunProjectTests
@@ -93,29 +87,21 @@ jobs:
       - name: Checkout Project
         uses: actions/checkout@v2
       
-      - name: Debug Delete Assets Folder
-        run: sudo rm -rf Assets
-      
-      - name: Debug Add Assets Folder
-        run: sudo mkdir Assets
-      
-      - name: Debug dir print
-        run: sudo ls -lashi
-      
-      - run: cd Assets
-      
-      - name: Pull Cached Repo From Project Tests Job
-        uses: actions/download-artifact@v2
+      - name: Create LFS File List
+        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
+
+      - name: Restore LFS Cache
+        uses: actions/cache@v2
+        id: lfs-cache
         with:
-          name: Assets
+          path: .git/lfs
+          key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}-v1
+
+      - name: Git LFS Pull
+        run: git lfs pull
       
-      - run: cd ..
-      
-      - name: Debug dir print
-        run: sudo ls -lashi
-      
-      - name: Cache Objects
-        uses: actions/cache@v2.1.3
+      - name: Restore Library Cache
+        uses: actions/cache@v2
         with:
           path: ${{ matrix.projectPath }}Library
           key: Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}
@@ -135,6 +121,25 @@ jobs:
       - name: Upload Build Output
         uses: actions/upload-artifact@v2
         with:
-          name: Build_${{ matrix.targetPlatform }}
+          name: ${{ matrix.targetPlatform }}
           path: build
 
+  CreateRelease:
+    name: Create Release
+    needs: BuildForTargetPlatforms
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Set env
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      
+      - name: Download All Builds
+        uses: actions/download-artifact@v2
+        
+      - name: Create Release
+        uses: marvinpinto/action-automatic-releases@v1.1.0
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          title: "Release "${{ env.RELEASE_VERSION }}
+          files: *
