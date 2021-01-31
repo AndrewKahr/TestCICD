@@ -1,0 +1,164 @@
+# This workflow runs unit tests on the project then attempts to build it, 
+# uploads artifacts, and lints the project every 6 days and 22 hours. 
+# This is to refresh the lfs cache to avoid wasting lfs bandwidth
+name: Weekly Build
+
+on:
+  schedule:
+    - cron:  '0 22 */6 * *' # /6 Every 6 days and 22 hours to refresh lfs cache
+
+env:
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+
+jobs:
+  RunProjectTests:
+    name: Run Tests for Unity Project
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        projectPath:
+          - # For if the unity project isn't at the root of the repo
+        unityVersion:
+          - 2019.4.17f1
+        targetPlatform:
+          - StandaloneWindows64 # Test a win64 standalone
+      
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v2
+        with:
+          ref: dev-unstable
+        
+      - name: Create LFS File List
+        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
+
+      - name: Restore LFS Cache
+        uses: actions/cache@v2
+        id: lfs-cache
+        with:
+          path: .git/lfs
+          key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}-v1
+
+      - name: Git LFS Pull
+        run: git lfs pull
+      
+      - name: Restore Library Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ matrix.projectPath }}Library
+          key: Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}
+          restore-keys: |
+            Library-${{ matrix.projectPath }}-
+            Library-
+      
+      - name: Run Unity Tests
+        uses: game-ci/unity-test-runner@v2.0-alpha-2
+        id: testRunner
+        with:
+          projectPath: ${{ matrix.projectPath }}
+          unityVersion: ${{ matrix.unityVersion }}
+          testMode: playmode
+      
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v1
+        with:
+          name: Test-Results-(PlayMode)
+          path: ${{ steps.testRunner.outputs.artifactsPath }}
+          
+  BuildForTargetPlatforms:
+    name: Build for ${{ matrix.targetPlatform }} on version ${{ matrix.unityVersion }}
+    needs: RunProjectTests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        projectPath:
+          - # For if the unity project isn't at the root of the repo
+        unityVersion:
+          - 2019.4.17f1
+        targetPlatform:
+          - StandaloneOSX # Build a macOS standalone (Intel 64-bit).
+          - StandaloneWindows # Build a Windows standalone.
+          - StandaloneWindows64 # Build a Windows 64-bit standalone.
+          - StandaloneLinux64 # Build a Linux 64-bit standalone.
+          #- iOS # Build an iOS player.
+          #- Android # Build an Android .apk standalone app.
+          #- WebGL # WebGL.
+          #- WSAPlayer # Build an Windows Store Apps player.
+          #- PS4 # Build a PS4 Standalone.
+          #- XboxOne # Build a Xbox One Standalone.
+          #- tvOS # Build to Apple's tvOS platform.
+          #- Switch # Build a Nintendo Switch player.
+    
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v2
+        with:
+          ref: dev-unstable
+
+      - name: Restore LFS Cache
+        uses: actions/cache@v2
+        id: lfs-cache
+        with:
+          path: .git/lfs
+          key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}-v1
+
+      - name: Git LFS Pull
+        run: git lfs pull
+      
+      - name: Restore Library Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ matrix.projectPath }}Library
+          key: Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}
+          restore-keys: |
+            Library-${{ matrix.projectPath }}-
+            Library-
+        
+      - name: Build Unity Project
+        uses: game-ci/unity-builder@v2.0-alpha-6
+        with:
+          projectPath: ${{ matrix.projectPath }}
+          unityVersion: ${{ matrix.unityVersion }}
+          targetPlatform: ${{ matrix.targetPlatform }}
+          versioning: Semantic
+          customParameters: ''
+      
+      - name: Upload Build Output
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.targetPlatform }}
+          path: build
+
+  Lint:
+    # Name the Job
+    name: Lint Code Base
+    # Set the agent to run on
+    runs-on: ubuntu-latest
+
+    ##################
+    # Load all steps #
+    ##################
+    steps:
+      ##########################
+      # Checkout the code base #
+      ##########################
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          # Full git history is needed to get a proper list of changed files within `super-linter`
+          fetch-depth: 0
+          ref: dev-unstable
+      
+      ################################
+      # Run Linter against code base #
+      ################################
+      - name: Run Linter
+        uses: github/super-linter@v3
+        env:
+          VALIDATE_ALL_CODEBASE: true
+          DEFAULT_BRANCH: master
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FILTER_REGEX_INCLUDE: .*.cs
+          FILTER_REGEX_EXCLUDE: .*.meta
