@@ -155,3 +155,4 @@ jobs:
           title: 'Latest Development Build'
           files: |
             build/*.zip
+
