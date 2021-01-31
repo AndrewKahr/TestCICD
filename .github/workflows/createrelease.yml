@@ -1,0 +1,145 @@
+# This workflow runs unit tests on the project, builds it, uploads artifacts, 
+# then creates a release with the tag name and build artifacts
+name: Create Release
+
+on: 
+  push:
+    tags:
+        - 'v*'
+
+env:
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+
+jobs:
+  RunProjectTests:
+    name: Run Tests for Unity Project
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        projectPath:
+          - # For if the unity project isn't at the root of the repo
+        unityVersion:
+          - 2019.4.17f1
+        targetPlatform:
+          - StandaloneWindows64 # Test a win64 standalone
+      
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v2
+        
+      - name: Create LFS File List
+        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
+
+      - name: Restore LFS Cache
+        uses: actions/cache@v2
+        id: lfs-cache
+        with:
+          path: .git/lfs
+          key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}-v1
+
+      - name: Git LFS Pull
+        run: git lfs pull
+      
+      - name: Restore Library Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ matrix.projectPath }}Library
+          key: Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}
+          restore-keys: |
+            Library-${{ matrix.projectPath }}-
+            Library-
+      
+      - name: Run Unity Tests
+        uses: game-ci/unity-test-runner@v2.0-alpha-2
+        id: testRunner
+        with:
+          projectPath: ${{ matrix.projectPath }}
+          unityVersion: ${{ matrix.unityVersion }}
+          testMode: playmode
+
+  BuildForTargetPlatforms:
+    name: Build for ${{ matrix.targetPlatform }} on version ${{ matrix.unityVersion }}
+    needs: RunProjectTests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        projectPath:
+          - # For if the unity project isn't at the root of the repo
+        unityVersion:
+          - 2019.4.17f1
+        targetPlatform:
+          - StandaloneOSX # Build a macOS standalone (Intel 64-bit).
+          - StandaloneWindows # Build a Windows standalone.
+          - StandaloneWindows64 # Build a Windows 64-bit standalone.
+          - StandaloneLinux64 # Build a Linux 64-bit standalone.
+          #- iOS # Build an iOS player.
+          #- Android # Build an Android .apk standalone app.
+          #- WebGL # WebGL.
+          #- WSAPlayer # Build an Windows Store Apps player.
+          #- PS4 # Build a PS4 Standalone.
+          #- XboxOne # Build a Xbox One Standalone.
+          #- tvOS # Build to Apple's tvOS platform.
+          #- Switch # Build a Nintendo Switch player.
+    
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v2
+      
+      - name: Create LFS File List
+        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
+
+      - name: Restore LFS Cache
+        uses: actions/cache@v2
+        id: lfs-cache
+        with:
+          path: .git/lfs
+          key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}-v1
+
+      - name: Git LFS Pull
+        run: git lfs pull
+      
+      - name: Restore Library Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ matrix.projectPath }}Library
+          key: Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}
+          restore-keys: |
+            Library-${{ matrix.projectPath }}-
+            Library-
+        
+      - name: Build Unity Project
+        uses: game-ci/unity-builder@v2.0-alpha-6
+        with:
+          projectPath: ${{ matrix.projectPath }}
+          unityVersion: ${{ matrix.unityVersion }}
+          targetPlatform: ${{ matrix.targetPlatform }}
+          versioning: Semantic
+          customParameters: ''
+      
+      - name: Upload Build Output
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.targetPlatform }}
+          path: build
+
+  CreateRelease:
+    name: Create Release
+    needs: BuildForTargetPlatforms
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Set env
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      
+      - name: Download All Builds
+        uses: actions/download-artifact@v2
+        
+      - name: Create Release
+        uses: marvinpinto/action-automatic-releases@v1.1.0
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: false
+          title: 'Release ${{ env.RELEASE_VERSION }}'
+          files: '*'
