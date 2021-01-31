@@ -154,7 +154,11 @@ jobs:
       - run: sudo mkdir build/${{ matrix.targetPlatform }}
       - run: sudo touch build/${{ matrix.targetPlatform }}/file1.txt
       - run: sudo touch build/${{ matrix.targetPlatform }}/file2.txt
+      - run: sudo mkdir build/${{ matrix.targetPlatform }}/assets
+      - run: sudo touch build/${{ matrix.targetPlatform }}/assets/file3.txt
       - run: cd build/${{ matrix.targetPlatform }}
+      - run: ls -lashi
+      
       - name: Zip Build
         run: sudo zip -r ${{ matrix.targetPlatform }}.zip *
 
