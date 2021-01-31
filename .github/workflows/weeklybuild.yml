@@ -5,7 +5,7 @@ name: Weekly Build
 
 on:
   schedule:
-    -cron: '0 22 * * *' # /6 Every 6 days and 22 hours to refresh lfs cache
+    - cron:  '0 22 */6 * *' # /6 Every 6 days and 22 hours to refresh lfs cache
 
 env:
   UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
