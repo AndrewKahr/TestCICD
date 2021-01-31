@@ -135,6 +135,10 @@ jobs:
     needs: BuildForTargetPlatforms
     runs-on: ubuntu-latest
     
+    # REMOVE THIS WHEN AUTOMATIC RELEASES CHANGES TO USE ENVIRONMENT FILES
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+    
     steps:
       - name: Get current date
         id: date
