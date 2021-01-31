@@ -153,4 +153,5 @@ jobs:
           prerelease: true
           automatic_release_tag: 'latest-prerelease'
           title: 'Latest Development Build'
-          files: *.zip
+          files: |
+            *.zip
