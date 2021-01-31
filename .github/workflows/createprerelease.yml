@@ -11,62 +11,132 @@ env:
   UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
 
 jobs:
-  RunProjectTests:
-    name: Run Tests for Unity Project
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        projectPath:
-          - # For if the unity project isn't at the root of the repo
-        unityVersion:
-          - 2019.4.17f1
-        targetPlatform:
-          - StandaloneWindows64 # Test a win64 standalone
+  # RunProjectTests:
+  #   name: Run Tests for Unity Project
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       projectPath:
+  #         - # For if the unity project isn't at the root of the repo
+  #       unityVersion:
+  #         - 2019.4.17f1
+  #       targetPlatform:
+  #         - StandaloneWindows64 # Test a win64 standalone
       
-    steps:
-      - name: Checkout Project
-        uses: actions/checkout@v2
+  #   steps:
+  #     - name: Checkout Project
+  #       uses: actions/checkout@v2
         
-      - name: Create LFS File List
-        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
+  #     - name: Create LFS File List
+  #       run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
 
-      - name: Restore LFS Cache
-        uses: actions/cache@v2
-        id: lfs-cache
-        with:
-          path: .git/lfs
-          key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}-v1
+  #     - name: Restore LFS Cache
+  #       uses: actions/cache@v2
+  #       id: lfs-cache
+  #       with:
+  #         path: .git/lfs
+  #         key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}-v1
 
-      - name: Git LFS Pull
-        run: git lfs pull
+  #     - name: Git LFS Pull
+  #       run: git lfs pull
       
-      - name: Remove LFS File List
-        run: sudo rm .lfs-assets-id
+  #     - name: Remove LFS File List
+  #       run: sudo rm .lfs-assets-id
         
-      - name: Restore Library Cache
-        uses: actions/cache@v2
-        with:
-          path: ${{ matrix.projectPath }}Library
-          key: Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}
-          restore-keys: |
-            Library-${{ matrix.projectPath }}-
-            Library-
+  #     - name: Restore Library Cache
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: ${{ matrix.projectPath }}Library
+  #         key: Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}
+  #         restore-keys: |
+  #           Library-${{ matrix.projectPath }}-
+  #           Library-
       
-      - name: Run Unity Tests
-        uses: game-ci/unity-test-runner@v2.0-alpha-2
-        id: testRunner
-        with:
-          projectPath: ${{ matrix.projectPath }}
-          unityVersion: ${{ matrix.unityVersion }}
-          testMode: playmode
+  #     - name: Run Unity Tests
+  #       uses: game-ci/unity-test-runner@v2.0-alpha-2
+  #       id: testRunner
+  #       with:
+  #         projectPath: ${{ matrix.projectPath }}
+  #         unityVersion: ${{ matrix.unityVersion }}
+  #         testMode: playmode
+      
+  # BuildForTargetPlatforms:
+  #   name: Build for ${{ matrix.targetPlatform }} on version ${{ matrix.unityVersion }}
+  #   needs: RunProjectTests
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       projectPath:
+  #         - # For if the unity project isn't at the root of the repo
+  #       unityVersion:
+  #         - 2019.4.17f1
+  #       targetPlatform:
+  #         - StandaloneOSX # Build a macOS standalone (Intel 64-bit).
+  #         - StandaloneWindows # Build a Windows standalone.
+  #         - StandaloneWindows64 # Build a Windows 64-bit standalone.
+  #         - StandaloneLinux64 # Build a Linux 64-bit standalone.
+  #         #- iOS # Build an iOS player.
+  #         #- Android # Build an Android .apk standalone app.
+  #         #- WebGL # WebGL.
+  #         #- WSAPlayer # Build an Windows Store Apps player.
+  #         #- PS4 # Build a PS4 Standalone.
+  #         #- XboxOne # Build a Xbox One Standalone.
+  #         #- tvOS # Build to Apple's tvOS platform.
+  #         #- Switch # Build a Nintendo Switch player.
+    
+  #   steps:
+  #     - name: Checkout Project
+  #       uses: actions/checkout@v2
+      
+  #     - name: Create LFS File List
+  #       run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
 
-  BuildForTargetPlatforms:
-    name: Build for ${{ matrix.targetPlatform }} on version ${{ matrix.unityVersion }}
-    needs: RunProjectTests
+  #     - name: Restore LFS Cache
+  #       uses: actions/cache@v2
+  #       id: lfs-cache
+  #       with:
+  #         path: .git/lfs
+  #         key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}-v1
+
+  #     - name: Git LFS Pull
+  #       run: git lfs pull
+      
+  #     - name: Remove LFS File List
+  #       run: sudo rm .lfs-assets-id
+        
+  #     - name: Restore Library Cache
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: ${{ matrix.projectPath }}Library
+  #         key: Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}
+  #         restore-keys: |
+  #           Library-${{ matrix.projectPath }}-
+  #           Library-
+        
+  #     - name: Build Unity Project
+  #       uses: game-ci/unity-builder@v2.0-alpha-6
+  #       with:
+  #         projectPath: ${{ matrix.projectPath }}
+  #         unityVersion: ${{ matrix.unityVersion }}
+  #         targetPlatform: ${{ matrix.targetPlatform }}
+  #         versioning: Semantic
+  #         customParameters: ''
+      
+  #     - name: Zip Build
+  #       run: sudo zip -r ${{ matrix.targetPlatform }}.zip build
+      
+  #     - name: Upload Build Output
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: ${{ matrix.targetPlatform }}
+  #         path: ${{ matrix.targetPlatform }}.zip
+
+  TestBuild:
+    name: Test Build
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
+    fail-fast: false
       matrix:
         projectPath:
           - # For if the unity project isn't at the root of the repo
@@ -77,56 +147,14 @@ jobs:
           - StandaloneWindows # Build a Windows standalone.
           - StandaloneWindows64 # Build a Windows 64-bit standalone.
           - StandaloneLinux64 # Build a Linux 64-bit standalone.
-          #- iOS # Build an iOS player.
-          #- Android # Build an Android .apk standalone app.
-          #- WebGL # WebGL.
-          #- WSAPlayer # Build an Windows Store Apps player.
-          #- PS4 # Build a PS4 Standalone.
-          #- XboxOne # Build a Xbox One Standalone.
-          #- tvOS # Build to Apple's tvOS platform.
-          #- Switch # Build a Nintendo Switch player.
-    
+
     steps:
-      - name: Checkout Project
-        uses: actions/checkout@v2
-      
-      - name: Create LFS File List
-        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
-
-      - name: Restore LFS Cache
-        uses: actions/cache@v2
-        id: lfs-cache
-        with:
-          path: .git/lfs
-          key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}-v1
-
-      - name: Git LFS Pull
-        run: git lfs pull
-      
-      - name: Remove LFS File List
-        run: sudo rm .lfs-assets-id
-        
-      - name: Restore Library Cache
-        uses: actions/cache@v2
-        with:
-          path: ${{ matrix.projectPath }}Library
-          key: Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}
-          restore-keys: |
-            Library-${{ matrix.projectPath }}-
-            Library-
-        
-      - name: Build Unity Project
-        uses: game-ci/unity-builder@v2.0-alpha-6
-        with:
-          projectPath: ${{ matrix.projectPath }}
-          unityVersion: ${{ matrix.unityVersion }}
-          targetPlatform: ${{ matrix.targetPlatform }}
-          versioning: Semantic
-          customParameters: ''
-      
+      - run: sudo mkdir build
+      - run: sudo mkdir build/${{ matrix.targetPlatform }}
+      - run: sudo touch build/${{ matrix.targetPlatform }}/file1.txt
+      - run: sudo touch build/${{ matrix.targetPlatform }}/file2.txt
       - name: Zip Build
-        run: sudo zip -r ${{ matrix.targetPlatform }}.zip build
-      
+        run: sudo zip -r ${{ matrix.targetPlatform }}.zip build/${{ matrix.targetPlatform }}
       - name: Upload Build Output
         uses: actions/upload-artifact@v2
         with:
@@ -135,7 +163,8 @@ jobs:
 
   CreatePreRelease:
     name: Create Pre-Release
-    needs: BuildForTargetPlatforms
+    #needs: BuildForTargetPlatforms
+    needs: TestBuild
     runs-on: ubuntu-latest
     
     # REMOVE THIS WHEN AUTOMATIC RELEASES CHANGES TO USE ENVIRONMENT FILES
@@ -145,6 +174,8 @@ jobs:
     steps:
       - name: Download All Builds
         uses: actions/download-artifact@v2
+      
+      - run: sudo ls -lashi
       
       - name: Create Pre-Release
         uses: marvinpinto/action-automatic-releases@v1.1.0
