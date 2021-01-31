@@ -1,0 +1,8 @@
+branchName: full
+silent: false
+autoCloseIssue: true
+branches:
+ - label: enhancement
+   name: dev-unstable
+ - label: bug
+   name: dev-unstable
