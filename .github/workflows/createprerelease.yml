@@ -133,41 +133,9 @@ jobs:
           name: build
           path: ${{ matrix.targetPlatform }}.zip
 
-  # TestBuild:
-  #   name: Test Build
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       projectPath:
-  #         - # For if the unity project isn't at the root of the repo
-  #       unityVersion:
-  #         - 2019.4.17f1
-  #       targetPlatform:
-  #         - StandaloneOSX # Build a macOS standalone (Intel 64-bit).
-  #         - StandaloneWindows # Build a Windows standalone.
-  #         - StandaloneWindows64 # Build a Windows 64-bit standalone.
-  #         - StandaloneLinux64 # Build a Linux 64-bit standalone.
-
-    # steps:
-      # - run: sudo mkdir build
-      # - run: sudo mkdir build/${{ matrix.targetPlatform }}
-      # - run: sudo touch build/${{ matrix.targetPlatform }}/file1.txt
-      # - run: sudo touch build/${{ matrix.targetPlatform }}/file2.txt
-      # - run: sudo mkdir build/${{ matrix.targetPlatform }}/assets
-      # - run: sudo touch build/${{ matrix.targetPlatform }}/assets/file3.txt
-      # - run: (cd build/${{ matrix.targetPlatform }} && sudo zip -r ../../${{ matrix.targetPlatform }}.zip .)
-
-      # - name: Upload Build Output
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #     name: build
-      #     path: ${{ matrix.targetPlatform }}.zip
-
   CreatePreRelease:
     name: Create Pre-Release
     needs: BuildForTargetPlatforms
-    # needs: TestBuild
     runs-on: ubuntu-latest
     
     # REMOVE THIS WHEN AUTOMATIC RELEASES CHANGES TO USE ENVIRONMENT FILES
