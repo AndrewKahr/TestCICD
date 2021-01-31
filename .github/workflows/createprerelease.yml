@@ -125,7 +125,7 @@ jobs:
           customParameters: ''
       
       - name: Zip Build
-        run: sudo zip -r ${{ matrix.targetPlatform }}.zip /build
+        run: sudo zip -r ${{ matrix.targetPlatform }}.zip build
       
       - name: Upload Build Output
         uses: actions/upload-artifact@v2
