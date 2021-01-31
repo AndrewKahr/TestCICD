@@ -3,10 +3,9 @@
 name: Create Pre-Release
 
 on:
-  pull_request_review:
-    submitted:
-      branches:
-        - 'dev-stable'
+  push:
+    branches:
+      - 'dev-stable'
 
 env:
   UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
