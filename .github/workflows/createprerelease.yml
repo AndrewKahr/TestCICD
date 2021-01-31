@@ -156,11 +156,7 @@ jobs:
       - run: sudo touch build/${{ matrix.targetPlatform }}/file2.txt
       - run: sudo mkdir build/${{ matrix.targetPlatform }}/assets
       - run: sudo touch build/${{ matrix.targetPlatform }}/assets/file3.txt
-      - run: cd build/${{ matrix.targetPlatform }}
-      - run: ls -lashi
-      
-      - name: Zip Build
-        run: sudo zip -r ${{ matrix.targetPlatform }}.zip *
+      - run: (cd build/${{ matrix.targetPlatform }} && sudo zip -r ../../${{ matrix.targetPlatform }}.zip .)
 
       - name: Upload Build Output
         uses: actions/upload-artifact@v2
