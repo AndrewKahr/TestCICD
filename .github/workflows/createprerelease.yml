@@ -144,5 +144,5 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: true
-          title: 'Development Build '${{ steps.date.outputs.date }}
+          title: 'Development Build ${{ steps.date.outputs.date }}' 
           files: '*'
