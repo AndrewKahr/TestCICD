@@ -179,10 +179,6 @@ jobs:
       
       - run: sudo ls -lashi
       
-      - run: sudo unzip StandaloneOSX.zip
-      
-      - run: sudo ls StandaloneOSX -lashi
-      
       - run: sudo touch test.txt
       
       - name: Create Pre-Release
