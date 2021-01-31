@@ -154,8 +154,9 @@ jobs:
       - run: sudo mkdir build/${{ matrix.targetPlatform }}
       - run: sudo touch build/${{ matrix.targetPlatform }}/file1.txt
       - run: sudo touch build/${{ matrix.targetPlatform }}/file2.txt
+      - run: cd build/${{ matrix.targetPlatform }}
       - name: Zip Build
-        run: sudo zip -r ${{ matrix.targetPlatform }}.zip build/${{ matrix.targetPlatform }}/*
+        run: sudo zip -r ${{ matrix.targetPlatform }}.zip *
 
       - name: Upload Build Output
         uses: actions/upload-artifact@v2
@@ -179,8 +180,6 @@ jobs:
       
       - run: sudo ls -lashi
       
-      - run: sudo touch test.txt
-      
       - name: Create Pre-Release
         uses: marvinpinto/action-automatic-releases@v1.1.0
         with:
@@ -190,4 +189,3 @@ jobs:
           title: 'Latest Development Build'
           files: |
             build/*.zip
-            test.txt
