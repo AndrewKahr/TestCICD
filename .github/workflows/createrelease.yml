@@ -41,6 +41,9 @@ jobs:
       - name: Git LFS Pull
         run: git lfs pull
       
+      - name: Remove LFS File List
+        run: sudo rm .lfs-assets-id
+      
       - name: Restore Library Cache
         uses: actions/cache@v2
         with:
@@ -100,6 +103,9 @@ jobs:
       - name: Git LFS Pull
         run: git lfs pull
       
+      - name: Remove LFS File List
+        run: sudo rm .lfs-assets-id
+        
       - name: Restore Library Cache
         uses: actions/cache@v2
         with:
