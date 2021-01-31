@@ -154,4 +154,5 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: false
           title: 'Release ${{ env.RELEASE_VERSION }}'
-          files: *.zip
+          files: |
+            *.zip
