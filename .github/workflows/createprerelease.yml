@@ -3,10 +3,9 @@
 name: Create Pre-Release
 
 on:
-  pull_request_review:
-    submitted:
-      branches:
-        - 'dev-stable'
+  push:
+    branches:
+      - 'dev-stable'
 
 env:
   UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -15,7 +14,6 @@ jobs:
   RunProjectTests:
     name: Run Tests for Unity Project
     runs-on: ubuntu-latest
-    if: github.event.review.state == 'approved'
     strategy:
       fail-fast: false
       matrix:
@@ -43,6 +41,9 @@ jobs:
       - name: Git LFS Pull
         run: git lfs pull
       
+      - name: Remove LFS File List
+        run: sudo rm .lfs-assets-id
+        
       - name: Restore Library Cache
         uses: actions/cache@v2
         with:
@@ -59,7 +60,7 @@ jobs:
           projectPath: ${{ matrix.projectPath }}
           unityVersion: ${{ matrix.unityVersion }}
           testMode: playmode
-
+      
   BuildForTargetPlatforms:
     name: Build for ${{ matrix.targetPlatform }} on version ${{ matrix.unityVersion }}
     needs: RunProjectTests
@@ -102,6 +103,9 @@ jobs:
       - name: Git LFS Pull
         run: git lfs pull
       
+      - name: Remove LFS File List
+        run: sudo rm .lfs-assets-id
+        
       - name: Restore Library Cache
         uses: actions/cache@v2
         with:
@@ -120,29 +124,34 @@ jobs:
           versioning: Semantic
           customParameters: ''
       
+      - name: Zip Build
+        run: (cd build/${{ matrix.targetPlatform }} && sudo zip -r ../../${{ matrix.targetPlatform }}.zip .)
+      
       - name: Upload Build Output
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.targetPlatform }}
-          path: build
+          name: build
+          path: ${{ matrix.targetPlatform }}.zip
 
   CreatePreRelease:
     name: Create Pre-Release
     needs: BuildForTargetPlatforms
     runs-on: ubuntu-latest
     
+    # REMOVE THIS WHEN AUTOMATIC RELEASES CHANGES TO USE ENVIRONMENT FILES
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+    
     steps:
-      - name: Get current date
-        id: date
-        run: echo "name=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
-      
       - name: Download All Builds
         uses: actions/download-artifact@v2
       
-      - name: Create Release     
+      - name: Create Pre-Release
         uses: marvinpinto/action-automatic-releases@v1.1.0
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: true
-          title: 'Development Build ${{ steps.date.outputs.date }}' 
-          files: '*'
+          automatic_release_tag: 'latest-prerelease'
+          title: 'Latest Development Build'
+          files: |
+            build/*.zip
