@@ -147,7 +147,7 @@ jobs:
       - name: Download All Builds
         uses: actions/download-artifact@v2
       
-      -run: sudo ls -lashi
+      - run: sudo ls -lashi
       
       - name: Create Release     
         uses: marvinpinto/action-automatic-releases@v1.1.0
@@ -156,4 +156,4 @@ jobs:
           prerelease: true
           automatic_release_tag: 'latest-prerelease'
           title: 'Development Build ${{ steps.date.outputs.date }}' 
-          files: *
+          files: ./*
