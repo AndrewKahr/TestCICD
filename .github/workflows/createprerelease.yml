@@ -155,11 +155,12 @@ jobs:
       - run: sudo touch build/${{ matrix.targetPlatform }}/file1.txt
       - run: sudo touch build/${{ matrix.targetPlatform }}/file2.txt
       - name: Zip Build
-        run: sudo zip -r ${{ matrix.targetPlatform }}.zip build/${{ matrix.targetPlatform }}
+        run: sudo zip -r ${{ matrix.targetPlatform }}.zip build/${{ matrix.targetPlatform }}/*
+
       - name: Upload Build Output
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.targetPlatform }}
+          name: build
           path: ${{ matrix.targetPlatform }}.zip
 
   CreatePreRelease:
@@ -178,6 +179,12 @@ jobs:
       
       - run: sudo ls -lashi
       
+      - run: sudo unzip StandaloneOSX.zip
+      
+      - run: sudo ls StandaloneOSX -lashi
+      
+      - run: sudo touch test.txt
+      
       - name: Create Pre-Release
         uses: marvinpinto/action-automatic-releases@v1.1.0
         with:
@@ -186,4 +193,5 @@ jobs:
           automatic_release_tag: 'latest-prerelease'
           title: 'Latest Development Build'
           files: |
-            *.zip
+            build/*.zip
+            test.txt
