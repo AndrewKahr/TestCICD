@@ -3,7 +3,14 @@
 # No artifacts are uploaded
 name: Test and Build
 
-on: [push, pull_request]
+on: 
+  push:
+    branches:
+        - release
+        - dev-stable
+        - dev-unstable
+
+  pull_request:
     branches:
         - release
         - dev-stable
